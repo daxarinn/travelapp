@@ -1,352 +1,221 @@
 <!doctype html>
 <html lang="is">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#111315">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Tyrkland — Daði & Kata</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <style>
-    :root {
-      --bg:#0d0f10; --card:#171a1c; --card2:#202427; --text:#f7f4ed;
-      --muted:#aaa79f; --accent:#e5b85c; --ok:#8fcf9d; --line:#2c3033;
-      --danger:#e58f8f;
-    }
-    * { box-sizing:border-box; }
-    html, body { margin:0; min-height:100%; background:var(--bg); color:var(--text);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-    body { padding-bottom:env(safe-area-inset-bottom); }
-    main { max-width:760px; margin:auto; padding:16px 14px 100px; }
-    header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-    h1 { font-size:25px; margin:3px 0 2px; }
-    .sub { color:var(--muted); font-size:13px; }
-    .sync { font-size:12px; color:var(--muted); padding-top:8px; text-align:right; }
-    .tabs {
-      display:flex; gap:7px; overflow-x:auto; padding:15px 0 10px;
-      position:sticky; top:0; z-index:4;
-      background:linear-gradient(var(--bg) 78%, rgba(13,15,16,0));
-      scrollbar-width:none;
-    }
-    .tabs::-webkit-scrollbar { display:none; }
-    .tab {
-      white-space:nowrap; border:1px solid var(--line); background:var(--card);
-      color:var(--text); padding:9px 12px; border-radius:999px; font-weight:600;
-    }
-    .tab.active { background:var(--accent); color:#15120b; border-color:var(--accent); }
-    .list { display:grid; gap:10px; }
-    .item {
-      background:var(--card); border:1px solid var(--line);
-      border-radius:17px; padding:13px;
-    }
-    .item.done { opacity:.55; }
-    .top { display:flex; align-items:flex-start; gap:10px; }
-    .check {
-      width:26px; height:26px; border-radius:50%; border:2px solid var(--accent);
-      background:none; color:#111; flex:none; font-weight:900;
-    }
-    .done .check { background:var(--ok); border-color:var(--ok); }
-    .title { font-weight:760; font-size:17px; flex:1; line-height:1.2; }
-    .meta { color:var(--accent); font-size:12px; margin-top:4px; font-weight:600; }
-    .notes { color:#d8d4cc; margin-top:9px; white-space:pre-wrap; line-height:1.4; }
-    .actions { display:flex; gap:8px; margin-top:11px; flex-wrap:wrap; }
-    .actions button, .actions a {
-      border:1px solid var(--line); background:var(--card2); color:var(--text);
-      padding:7px 10px; border-radius:10px; text-decoration:none; font-size:13px;
-    }
-    .actions .danger { color:var(--danger); }
-    .fab {
-      position:fixed; right:18px; bottom:calc(22px + env(safe-area-inset-bottom));
-      width:60px; height:60px; border:0; border-radius:50%;
-      font-size:32px; line-height:1; background:var(--accent); color:#17130c;
-      box-shadow:0 8px 30px #0009; z-index:10;
-    }
-    dialog {
-      width:min(92vw,560px); border:1px solid var(--line); border-radius:20px;
-      background:var(--card); color:var(--text); padding:18px;
-    }
-    dialog::backdrop { background:#000b; }
-    label { display:block; color:var(--muted); font-size:12px; margin:11px 0 5px; }
-    input, textarea, select {
-      width:100%; background:#0f1112; border:1px solid var(--line);
-      color:var(--text); padding:11px; border-radius:11px; font:inherit;
-    }
-    textarea { min-height:92px; resize:vertical; }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-    .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:15px; }
-    .modal-actions button {
-      border:1px solid var(--line); background:var(--card2); color:var(--text);
-      padding:9px 12px; border-radius:10px;
-    }
-    .modal-actions .primary { background:var(--accent); color:#15120b; font-weight:800; }
-    .empty { color:var(--muted); text-align:center; padding:45px 15px; }
-    .offline-note {
-      display:none; background:#2a2114; border:1px solid #59451f; color:#e7c98d;
-      border-radius:12px; padding:9px 11px; margin:8px 0 0; font-size:12px;
-    }
-    .offline .offline-note { display:block; }
-    button { cursor:pointer; }
-    @media(max-width:480px) {
-      h1 { font-size:22px; }
-      main { padding-top:10px; }
-      .row { grid-template-columns:1fr; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111315">
+<title>Tyrkland — Daði & Kata</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0d0f10;--card:#171a1c;--card2:#202427;--text:#f7f4ed;--muted:#aaa79f;--accent:#e5b85c;--ok:#8fcf9d;--line:#2c3033;--danger:#e99b9b}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:12px 14px 100px} header{display:flex;justify-content:space-between;gap:10px} h1{font-size:23px;margin:3px 0}
+.sub,.muted{color:var(--muted)} .sub{font-size:12px} .sync{font-size:11px;color:var(--muted);padding-top:8px}
+.search{position:sticky;top:0;z-index:8;padding:10px 0 7px;background:linear-gradient(var(--bg) 82%,transparent)} .search input{width:100%;padding:10px 13px;border-radius:14px;border:1px solid var(--line);background:#111416;color:var(--text)}
+.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 11px;scrollbar-width:none} .tab,.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 11px;border-radius:999px;font-weight:650} .tab.active{background:var(--accent);color:#17130c;border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:9px} .top{display:flex;gap:9px;align-items:flex-start} .grow{flex:1;min-width:0} .title{font-size:16px;font-weight:780;line-height:1.25} .meta{font-size:11px;color:var(--accent);margin-top:3px}
+.notes{white-space:pre-wrap;color:#d9d5cc;line-height:1.4;margin-top:8px;font-size:14px} .section-title{font-size:12px;color:var(--accent);font-weight:800;margin:14px 3px 7px;text-transform:uppercase}
+.check{width:25px;height:25px;border:2px solid var(--accent);border-radius:50%;background:none;color:#111;flex:none;font-weight:900} .done{opacity:.55} .done .check{background:var(--ok);border-color:var(--ok)}
+.star{border:0;background:none;color:var(--text);font-size:22px;padding:0} .links,.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px} .links a,.actions button{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:9px;padding:6px 9px;text-decoration:none;font-size:12px}
+.danger{color:var(--danger)!important} .badge{display:inline-block;margin-top:7px;border:1px solid #3a3d40;background:#25282a;border-radius:999px;padding:3px 7px;font-size:11px}
+.fab{position:fixed;right:18px;bottom:22px;width:60px;height:60px;border:0;border-radius:50%;background:var(--accent);color:#17130c;font-size:32px;box-shadow:0 8px 30px #0008} .hidden{display:none!important}
+dialog{width:min(94vw,590px);max-height:88vh;overflow:auto;border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--text);padding:17px} dialog::backdrop{background:#000b}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px} input,textarea,select{width:100%;background:#0f1112;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font:inherit} textarea{min-height:82px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px} .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px} .modal-actions button{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:9px;padding:8px 11px} .primary{background:var(--accent)!important;color:#17130c!important;font-weight:800}
+.link-row{display:grid;grid-template-columns:.8fr 1.6fr auto;gap:6px;margin:6px 0} .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px} .choice-grid button{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:13px;padding:14px 8px}
+.join-box{max-width:440px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px} .empty{text-align:center;color:var(--muted);padding:34px 12px} .back{border:0;background:none;color:var(--accent);padding:0;margin-bottom:10px} .json-area{min-height:250px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.35} .import-help{font-size:12px;color:var(--muted);line-height:1.4;margin:7px 0}.import-preview{margin-top:10px;padding:10px;border:1px solid var(--line);background:#111416;border-radius:11px;font-size:13px;line-height:1.45}.import-preview.ok{border-color:#35543d}.import-preview.err{border-color:#633;color:#efb0b0}.import-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.import-actions button{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:9px;padding:8px 10px}
+@media(max-width:500px){.row{grid-template-columns:1fr}.link-row{grid-template-columns:1fr 1.4fr auto}}
+</style>
 </head>
 <body>
-<main id="app">
-  <header>
-    <div>
-      <h1>🇹🇷 Tyrkland</h1>
-      <div class="sub">Daði & Kata · sameiginlega ferðaborðið</div>
-    </div>
-    <div class="sync" id="sync">Tengist…</div>
-  </header>
-
-  <div class="offline-note">Offline — sýni síðustu vistuðu stöðu. Breytingar þurfa net.</div>
-
-  <nav class="tabs" id="tabs"></nav>
-  <section class="list" id="list"></section>
+<main>
+<header><div><h1>🇹🇷 Tyrkland</h1><div class="sub">Daði & Kata · sameiginlega ferðaborðið · v2.1</div></div><div class="sync" id="sync">Ræsir…</div></header>
+<div id="joined" class="hidden">
+ <div class="search"><input id="search" type="search" placeholder="🔎 Leita í öllu…"></div>
+ <nav class="tabs" id="tabs"></nav><section id="content"></section>
+</div>
+<div id="join" class="join-box hidden">
+ <h2>Tengjast ferðinni</h2><p class="muted">Sláðu inn boðskóðann einu sinni á þessum síma.</p>
+ <label>Boðskóði</label><input id="joinCode" autocapitalize="characters" placeholder="IZMIR-…">
+ <div class="modal-actions"><button class="primary" id="joinBtn">Tengjast</button></div><div class="muted" id="joinMsg"></div>
+</div>
 </main>
+<button class="fab hidden" id="add">+</button>
 
-<button class="fab" id="add" aria-label="Bæta við">+</button>
+<dialog id="choice">
+ <h3 style="margin:0">Bæta við</h3>
+ <div class="choice-grid"><button data-new="item">📍 Plan / staður</button><button data-new="shoplist">🛒 Innkaupalisti</button><button data-new="shopitem">➕ Innkaup</button><button data-new="memo">📝 Memo</button><button data-new="json" style="grid-column:1/-1">📋 Líma JSON frá ChatGPT</button></div>
+</dialog>
 
-<dialog id="dlg">
-  <form id="form">
-    <input type="hidden" id="id">
-    <label>Hvað?</label>
-    <input id="title" required placeholder="t.d. Westpark Outlet">
+<dialog id="importDlg">
+ <h3 style="margin:0 0 5px">📋 Flytja inn JSON</h3>
+ <div class="import-help">Límdu JSON frá ChatGPT hér. Appið þolir líka <code>```json</code> kóða-girðingar og sýnir forskoðun áður en neitt er vistað.</div>
+ <textarea id="jsonText" class="json-area" spellcheck="false" placeholder='{"travelapp":1,"items":[...]}'></textarea>
+ <div class="import-actions">
+  <button type="button" id="jsonExample">Setja inn dæmi</button>
+  <button type="button" id="jsonPreview">Forskoða</button>
+ </div>
+ <div id="jsonResult" class="import-preview hidden"></div>
+ <div class="modal-actions">
+  <button type="button" id="jsonCancel">Hætta við</button>
+  <button type="button" class="primary" id="jsonImport" disabled>Flytja inn</button>
+ </div>
+</dialog>
 
-    <div class="row">
-      <div>
-        <label>Flokkur</label>
-        <select id="category">
-          <option value="plan">Plan</option>
-          <option value="staður">Staður</option>
-          <option value="innkaup">Innkaup</option>
-          <option value="matur">Matur</option>
-          <option value="annað">Annað</option>
-        </select>
-      </div>
-      <div>
-        <label>Dagsetning</label>
-        <input id="date" type="date">
-      </div>
-    </div>
-
-    <label>Maps / vefslóð</label>
-    <input id="maps" type="url" placeholder="https://...">
-
-    <label>Athugasemd</label>
-    <textarea id="notes" placeholder="Það sem við viljum muna…"></textarea>
-
-    <div class="modal-actions">
-      <button type="button" id="cancel">Hætta við</button>
-      <button class="primary" type="submit">Vista</button>
-    </div>
-  </form>
+<dialog id="formDlg">
+<form id="form">
+<input type="hidden" id="type"><input type="hidden" id="eid"><input type="hidden" id="listid">
+<h3 id="heading" style="margin:0"></h3>
+<label>Heiti</label><input id="title" required>
+<div id="itemFields"><div class="row"><div><label>Flokkur</label><select id="category"><option value="plan">Plan</option><option value="staður">Staður</option><option value="flug">Flug</option><option value="matur">Matur</option><option value="annað">Annað</option></select></div><div><label>Dagsetning</label><input id="date" type="date"></div></div></div>
+<div id="shopFields"><div class="row"><div><label>Magn</label><input id="qty"></div><div><label>Birta aftur eftir X daga</label><input id="repeat" type="number" min="1"></div></div></div>
+<div id="memoFields"><label><input id="pinned" type="checkbox" style="width:auto"> Festa memo efst</label></div>
+<label id="notesLabel">Athugasemd</label><textarea id="notes"></textarea>
+<label><input id="starred" type="checkbox" style="width:auto"> ⭐ Stjörnumerkt</label>
+<label>Slóðir</label><div id="linkRows"></div><button type="button" class="chip" id="addLink">+ Slóð</button>
+<div class="modal-actions"><button type="button" id="cancel">Hætta við</button><button class="primary" type="submit">Vista</button></div>
+</form>
 </dialog>
 
 <script>
-const SUPABASE_URL = "https://ecvpkolcusayuakntnlb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_EFXmhorucrLfmiWHj0NZMg_YhPIOPYM";
-const API = SUPABASE_URL + "/rest/v1/items";
-const HEADERS = {
-  apikey: SUPABASE_KEY,
-  Authorization: "Bearer " + SUPABASE_KEY,
-  "Content-Type": "application/json"
+const URL='https://ecvpkolcusayuakntnlb.supabase.co', KEY='sb_publishable_EFXmhorucrLfmiWHj0NZMg_YhPIOPYM';
+const sb=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+let tripId=null,items=[],links=[],lists=[],shop=[],memos=[],tab='today',openList=null,q='';
+const $=x=>document.getElementById(x);
+const tabs=[['today','Í dag'],['starred','⭐'],['plans','Plan'],['shopping','Innkaup'],['memos','Memó']];
+function today(){const d=new Date(),o=d.getTimezoneOffset();return new Date(d.getTime()-o*60000).toISOString().slice(0,10)}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmt(s){if(!s)return'';return new Intl.DateTimeFormat('is-IS',{day:'numeric',month:'short'}).format(new Date(s+'T12:00:00'))}
+function elinks(t,id){return links.filter(x=>x.entity_type===t&&x.entity_id===String(id)).sort((a,b)=>a.sort_order-b.sort_order)}
+function lhtml(t,id){const a=elinks(t,id);return a.length?`<div class="links">${a.map(x=>`<a href="${esc(x.url)}" target="_blank">🔗 ${esc(x.label||'Slóð')}</a>`).join('')}</div>`:''}
+function due(x){return !x.purchased||(x.recurring_days&&x.next_due_date&&x.next_due_date<=today())}
+function star(kind,id,val){return `<button class="star" onclick="toggleStar('${kind}','${id}',${!val})">${val?'⭐':'☆'}</button>`}
+
+async function init(){
+ let {data:{session}}=await sb.auth.getSession();
+ if(!session){const r=await sb.auth.signInAnonymously();if(r.error){$('sync').textContent='Auth villa';$('joined').classList.remove('hidden');$('content').innerHTML='<div class="empty">Kveiktu á Anonymous Sign-Ins í Supabase.</div>';return}session=r.data.session}
+ const m=await sb.from('trip_members').select('trip_id').eq('user_id',session.user.id).maybeSingle();
+ if(!m.data){$('join').classList.remove('hidden');$('sync').textContent='Ótengdur';return}
+ tripId=m.data.trip_id;showApp();await load();handleShare();
+}
+function showApp(){$('join').classList.add('hidden');$('joined').classList.remove('hidden');$('add').classList.remove('hidden')}
+$('joinBtn').onclick=async()=>{$('joinMsg').textContent='Tengist…';const r=await sb.rpc('join_trip',{p_code:$('joinCode').value.trim()});if(r.error){$('joinMsg').textContent='Rangur kóði eða villa.';return}tripId=r.data;showApp();await load();handleShare()};
+
+async function load(){
+ const rs=await Promise.all([
+  sb.from('items').select('*').eq('trip_id',tripId).order('sort_order').order('id'),
+  sb.from('links').select('*').eq('trip_id',tripId).order('sort_order'),
+  sb.from('shopping_lists').select('*').eq('trip_id',tripId).order('sort_order'),
+  sb.from('shopping_items').select('*').eq('trip_id',tripId).order('sort_order'),
+  sb.from('memos').select('*').eq('trip_id',tripId).order('pinned',{ascending:false}).order('updated_at',{ascending:false})
+ ]);
+ if(rs.some(r=>r.error)){$('sync').textContent='Offline';return}
+ [items,links,lists,shop,memos]=rs.map(r=>r.data||[]);$('sync').textContent='● Samstillt';render();
+}
+function renderTabs(){$('tabs').innerHTML=tabs.map(([k,n])=>`<button class="tab ${tab===k?'active':''}" data-k="${k}">${n}</button>`).join('');document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.k;openList=null;render()})}
+function itemCard(x){return `<article class="card ${x.done?'done':''}"><div class="top"><button class="check" onclick="donePlan(${x.id},${!x.done})">${x.done?'✓':''}</button><div class="grow"><div class="title">${esc(x.title)}</div><div class="meta">${esc(x.category)}${x.planned_date?' · '+fmt(x.planned_date):''}</div></div>${star('item',x.id,x.starred)}</div>${x.notes?`<div class="notes">${esc(x.notes)}</div>`:''}${lhtml('item',x.id)}<div class="actions"><button onclick="editEntity('item','${x.id}')">Breyta</button><button class="danger" onclick="del('item','${x.id}')">Eyða</button></div></article>`}
+function shopCard(x){const active=due(x),lst=lists.find(l=>l.id===x.list_id);return `<article class="card ${active?'':'done'}"><div class="top"><button class="check" onclick="buy('${x.id}',${active})">${active?'':'✓'}</button><div class="grow"><div class="title">${esc(x.title)}${x.quantity?' · '+esc(x.quantity):''}</div><div class="meta">${lst?esc(lst.title):'Innkaup'}${x.recurring_days?' · ↻ '+x.recurring_days+' dagar':''}</div></div>${star('shopping_item',x.id,x.starred)}</div>${x.notes?`<div class="notes">${esc(x.notes)}</div>`:''}${!active&&x.next_due_date?`<span class="badge">Kemur aftur ${fmt(x.next_due_date)}</span>`:''}${lhtml('shopping_item',x.id)}<div class="actions"><button onclick="editEntity('shopitem','${x.id}')">Breyta</button><button class="danger" onclick="del('shopitem','${x.id}')">Eyða</button></div></article>`}
+function memoCard(x){return `<article class="card"><div class="top"><div class="grow"><div class="title">${esc(x.title)}</div>${x.pinned?'<div class="meta">📌 Fest</div>':''}</div>${star('memo',x.id,x.starred)}</div>${x.body?`<div class="notes">${esc(x.body)}</div>`:''}${lhtml('memo',x.id)}<div class="actions"><button onclick="editEntity('memo','${x.id}')">Breyta</button><button class="danger" onclick="del('memo','${x.id}')">Eyða</button></div></article>`}
+function render(){renderTabs();if(q)return renderSearch();if(tab==='today')return renderToday();if(tab==='starred')return renderStarred();if(tab==='plans')return renderPlans();if(tab==='shopping')return renderShopping();return renderMemos()}
+function renderToday(){const p=items.filter(x=>x.planned_date===today()),s=shop.filter(due),m=memos.filter(x=>x.pinned);$('content').innerHTML=`<div class="section-title">Plan dagsins</div>${p.map(itemCard).join('')||'<div class="empty">Ekkert plan í dag.</div>'}<div class="section-title">Þarf að kaupa</div>${s.map(shopCard).join('')||'<div class="empty">Allt keypt ✨</div>'}${m.length?'<div class="section-title">Fest memó</div>'+m.map(memoCard).join(''):''}`}
+function renderStarred(){const h=items.filter(x=>x.starred).map(itemCard).join('')+shop.filter(x=>x.starred).map(shopCard).join('')+memos.filter(x=>x.starred).map(memoCard).join('');$('content').innerHTML=h||'<div class="empty">Engar stjörnur enn ⭐</div>'}
+function renderPlans(){$('content').innerHTML=items.map(itemCard).join('')||'<div class="empty">Ekkert plan enn.</div>'}
+function renderShopping(){if(openList){const l=lists.find(x=>x.id===openList);if(!l){openList=null;return renderShopping()}const its=shop.filter(x=>x.list_id===l.id).sort((a,b)=>Number(!due(a))-Number(!due(b)));$('content').innerHTML=`<button class="back" onclick="openList=null;render()">← Allir listar</button><article class="card"><div class="top"><div class="grow"><div class="title">🛒 ${esc(l.title)}</div>${l.notes?`<div class="notes">${esc(l.notes)}</div>`:''}</div>${star('shopping_list',l.id,l.starred)}</div>${lhtml('shopping_list',l.id)}<div class="actions"><button onclick="newShopItem('${l.id}')">+ Vara</button><button onclick="editEntity('shoplist','${l.id}')">Breyta lista</button></div></article><div class="section-title">Atriði</div>${its.map(shopCard).join('')||'<div class="empty">Tómur listi.</div>'}`;return}$('content').innerHTML=lists.map(l=>`<article class="card" onclick="openList='${l.id}';render()" style="cursor:pointer"><div class="title">🛒 ${esc(l.title)}</div><div class="meta">${shop.filter(x=>x.list_id===l.id&&due(x)).length} ókeypt / komið á tíma</div>${l.notes?`<div class="notes">${esc(l.notes)}</div>`:''}</article>`).join('')||'<div class="empty">Engir innkaupalistar.</div>'}
+function renderMemos(){$('content').innerHTML=memos.map(memoCard).join('')||'<div class="empty">Engin memó enn.</div>'}
+function renderSearch(){const z=q.toLowerCase(),out=[];for(const x of items)if((JSON.stringify(x)+JSON.stringify(elinks('item',x.id))).toLowerCase().includes(z))out.push(itemCard(x));for(const x of shop)if((JSON.stringify(x)+JSON.stringify(elinks('shopping_item',x.id))).toLowerCase().includes(z))out.push(shopCard(x));for(const x of memos)if((JSON.stringify(x)+JSON.stringify(elinks('memo',x.id))).toLowerCase().includes(z))out.push(memoCard(x));$('content').innerHTML=out.join('')||'<div class="empty">Ekkert fannst.</div>'}
+$('search').oninput=e=>{q=e.target.value.trim();render()};
+
+$('add').onclick=()=>$('choice').showModal();document.querySelectorAll('[data-new]').forEach(b=>b.onclick=()=>{$('choice').close();if(b.dataset.new==='json')openJsonImport();else if(b.dataset.new==='shopitem')newShopItem(openList||lists[0]?.id);else newEntity(b.dataset.new)});$('cancel').onclick=()=>$('formDlg').close();
+function reset(){$('form').reset();$('eid').value='';$('listid').value='';$('linkRows').innerHTML=''}
+function vis(t){$('itemFields').classList.toggle('hidden',t!=='item');$('shopFields').classList.toggle('hidden',t!=='shopitem');$('memoFields').classList.toggle('hidden',t!=='memo');$('notesLabel').textContent=t==='memo'?'Texti':'Athugasemd'}
+function addLink(label='',url=''){const d=document.createElement('div');d.className='link-row';d.innerHTML=`<input class="ll" placeholder="Heiti" value="${esc(label)}"><input class="lu" type="url" placeholder="https://…" value="${esc(url)}"><button type="button">×</button>`;d.querySelector('button').onclick=()=>d.remove();$('linkRows').appendChild(d)} $('addLink').onclick=()=>addLink();
+function newEntity(t){reset();$('type').value=t;vis(t);$('heading').textContent=t==='item'?'Nýtt plan / staður':t==='shoplist'?'Nýr innkaupalisti':t==='memo'?'Nýtt memo':'Nýtt';if(t==='item')$('date').value=today();$('formDlg').showModal()}
+function newShopItem(id){if(!id)return alert('Búðu fyrst til innkaupalista.');newEntity('shopitem');$('listid').value=id;$('heading').textContent='Nýtt innkaupaatriði'}
+function fillLinks(t,id){$('linkRows').innerHTML='';elinks(t,id).forEach(x=>addLink(x.label,x.url))}
+function editEntity(t,id){reset();$('type').value=t;$('eid').value=id;vis(t);if(t==='item'){const x=items.find(z=>String(z.id)===String(id));$('title').value=x.title;$('category').value=x.category;$('date').value=x.planned_date||'';$('notes').value=x.notes||'';$('starred').checked=x.starred;fillLinks('item',id)}else if(t==='shoplist'){const x=lists.find(z=>z.id===id);$('title').value=x.title;$('notes').value=x.notes||'';$('starred').checked=x.starred;fillLinks('shopping_list',id)}else if(t==='shopitem'){const x=shop.find(z=>z.id===id);$('listid').value=x.list_id;$('title').value=x.title;$('qty').value=x.quantity||'';$('repeat').value=x.recurring_days||'';$('notes').value=x.notes||'';$('starred').checked=x.starred;fillLinks('shopping_item',id)}else{const x=memos.find(z=>z.id===id);$('title').value=x.title;$('notes').value=x.body||'';$('pinned').checked=x.pinned;$('starred').checked=x.starred;fillLinks('memo',id)}$('heading').textContent='Breyta';$('formDlg').showModal()}
+function getLinks(){return [...document.querySelectorAll('.link-row')].map(r=>({label:r.querySelector('.ll').value.trim()||'Slóð',url:r.querySelector('.lu').value.trim()})).filter(x=>x.url)}
+async function saveLinks(t,id,a){await sb.from('links').delete().eq('trip_id',tripId).eq('entity_type',t).eq('entity_id',String(id));if(a.length)await sb.from('links').insert(a.map((x,i)=>({trip_id:tripId,entity_type:t,entity_id:String(id),label:x.label,url:x.url,sort_order:(i+1)*10})))}
+$('form').onsubmit=async e=>{e.preventDefault();const t=$('type').value,id=$('eid').value,title=$('title').value.trim(),ls=getLinks();let r,sid=id;if(t==='item'){const o={trip_id:tripId,title,category:$('category').value,planned_date:$('date').value||null,notes:$('notes').value.trim()||null,starred:$('starred').checked,created_by:'Daði/Kata'};r=id?await sb.from('items').update(o).eq('id',id).select().single():await sb.from('items').insert(o).select().single();if(r.data)sid=r.data.id;if(!r.error)await saveLinks('item',sid,ls)}else if(t==='shoplist'){const o={trip_id:tripId,title,notes:$('notes').value.trim()||null,starred:$('starred').checked};r=id?await sb.from('shopping_lists').update(o).eq('id',id).select().single():await sb.from('shopping_lists').insert(o).select().single();if(r.data)sid=r.data.id;if(!r.error)await saveLinks('shopping_list',sid,ls)}else if(t==='shopitem'){const o={trip_id:tripId,list_id:$('listid').value,title,quantity:$('qty').value.trim()||null,notes:$('notes').value.trim()||null,recurring_days:$('repeat').value?Number($('repeat').value):null,starred:$('starred').checked};r=id?await sb.from('shopping_items').update(o).eq('id',id).select().single():await sb.from('shopping_items').insert(o).select().single();if(r.data)sid=r.data.id;if(!r.error)await saveLinks('shopping_item',sid,ls)}else{const o={trip_id:tripId,title,body:$('notes').value.trim()||null,pinned:$('pinned').checked,starred:$('starred').checked};r=id?await sb.from('memos').update(o).eq('id',id).select().single():await sb.from('memos').insert(o).select().single();if(r.data)sid=r.data.id;if(!r.error)await saveLinks('memo',sid,ls)}if(r?.error)return alert(r.error.message);$('formDlg').close();await load()};
+async function donePlan(id,v){await sb.from('items').update({done:v}).eq('id',id);await load()}
+async function buy(id,active){const x=shop.find(z=>z.id===id);if(active){let next=null;if(x.recurring_days){const d=new Date();d.setDate(d.getDate()+x.recurring_days);next=d.toLocaleDateString('en-CA')}await sb.from('shopping_items').update({purchased:true,last_purchased_at:new Date().toISOString(),next_due_date:next}).eq('id',id)}else await sb.from('shopping_items').update({purchased:false,next_due_date:null}).eq('id',id);await load()}
+async function toggleStar(k,id,v){const m={item:'items',shopping_item:'shopping_items',shopping_list:'shopping_lists',memo:'memos'};await sb.from(m[k]).update({starred:v}).eq('id',id);await load()}
+async function del(t,id){if(!confirm('Eyða?'))return;const m={item:['items','item'],shoplist:['shopping_lists','shopping_list'],shopitem:['shopping_items','shopping_item'],memo:['memos','memo']},[tb,lt]=m[t];await sb.from('links').delete().eq('trip_id',tripId).eq('entity_type',lt).eq('entity_id',String(id));await sb.from(tb).delete().eq('id',id);if(openList===id)openList=null;await load()}
+function handleShare(){const raw=localStorage.getItem('travelapp_pending_share');if(!raw)return;localStorage.removeItem('travelapp_pending_share');try{const s=JSON.parse(raw);let u=s.url||'',tx=s.text||'';if(!u){const m=tx.match(/https?:\/\/\S+/);if(m)u=m[0]}newEntity('item');$('heading').textContent='Vista deilt efni';$('title').value=s.title||'Deilt efni';$('category').value=(u.includes('maps')||u.includes('goo.gl'))?'staður':'annað';$('notes').value=tx.replace(u,'').trim();if(u)addLink('Slóð',u)}catch{}}
+
+// --- TravelApp JSON copy/paste import ---------------------------------------
+let pendingImport=null;
+const JSON_EXAMPLE={
+  travelapp:1,
+  items:[
+    {title:"Ephesus",category:"staður",date:"2026-10-05",notes:"Dæmi um plan/st að.",starred:true,links:[{label:"Maps",url:"https://maps.google.com/"}]}
+  ],
+  shopping_lists:[
+    {title:"Skreppa í búð",items:[{title:"Dæmi vara",quantity:"2",recurring_days:3,links:[{label:"Vara",url:"https://example.com/"}]}]}
+  ],
+  memos:[{title:"Dæmi memo",body:"Frjáls texti.",pinned:false,starred:false}]
 };
-
-let items = [];
-let filter = "today";
-const $ = id => document.getElementById(id);
-const tabs = [
-  ["today","Í dag"],
-  ["later","Seinna"],
-  ["places","Staðir"],
-  ["shopping","Innkaup"],
-  ["all","Allt"]
-];
-
-function isoToday() {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  return new Date(d.getTime() - off*60000).toISOString().slice(0,10);
-}
-
-function esc(s="") {
-  return String(s).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
-}
-
-function cacheItems() {
-  localStorage.setItem("tyrkland_items_cache", JSON.stringify(items));
-}
-
-function loadCached() {
-  try {
-    const x = JSON.parse(localStorage.getItem("tyrkland_items_cache") || "[]");
-    if (Array.isArray(x)) items = x;
-  } catch {}
-}
-
-function renderTabs() {
-  $("tabs").innerHTML = tabs.map(([k,n]) =>
-    `<button class="tab ${filter===k?"active":""}" data-k="${k}">${n}</button>`
-  ).join("");
-  document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
-    filter = b.dataset.k;
-    render();
-  });
-}
-
-function visible(x) {
-  const t = isoToday();
-  if (filter === "today") return x.planned_date === t;
-  if (filter === "later") return !x.done && (!x.planned_date || x.planned_date > t);
-  if (filter === "places") return x.category === "staður";
-  if (filter === "shopping") return x.category === "innkaup";
-  return true;
-}
-
-function render() {
-  renderTabs();
-  const a = items.filter(visible).sort((a,b) =>
-    Number(a.done)-Number(b.done) ||
-    (a.sort_order||0)-(b.sort_order||0) ||
-    a.id-b.id
-  );
-
-  $("list").innerHTML = a.length ? a.map(x => `
-    <article class="item ${x.done?"done":""}">
-      <div class="top">
-        <button class="check" onclick="toggleDone(${x.id}, ${!x.done})">${x.done?"✓":""}</button>
-        <div class="title">
-          ${esc(x.title)}
-          <div class="meta">${esc(x.category)}${x.planned_date ? " · " + x.planned_date : ""}</div>
-        </div>
-      </div>
-      ${x.notes ? `<div class="notes">${esc(x.notes)}</div>` : ""}
-      <div class="actions">
-        ${x.maps_url ? `<a href="${esc(x.maps_url)}" target="_blank" rel="noopener">🗺️ Opna</a>` : ""}
-        <button onclick="editItem(${x.id})">Breyta</button>
-        <button class="danger" onclick="deleteItem(${x.id})">Eyða</button>
-      </div>
-    </article>
-  `).join("") : `<div class="empty">Ekkert hér enn ✨</div>`;
-}
-
-async function load() {
-  try {
-    const r = await fetch(API + "?select=*&order=sort_order.asc,id.asc", {headers:HEADERS});
-    if (!r.ok) throw new Error(await r.text());
-    items = await r.json();
-    cacheItems();
-    $("sync").textContent = "● Samstillt";
-    $("app").classList.remove("offline");
-    render();
-  } catch (e) {
-    $("sync").textContent = "Offline";
-    $("app").classList.add("offline");
-    loadCached();
-    render();
-    console.error(e);
+function openJsonImport(){pendingImport=null;$('jsonText').value='';$('jsonResult').className='import-preview hidden';$('jsonResult').textContent='';$('jsonImport').disabled=true;$('importDlg').showModal();setTimeout(()=>$('jsonText').focus(),40)}
+$('jsonCancel').onclick=()=>$('importDlg').close();
+$('jsonExample').onclick=()=>{$('jsonText').value=JSON.stringify(JSON_EXAMPLE,null,2);previewJsonImport()};
+$('jsonPreview').onclick=previewJsonImport;
+function stripJsonWrapper(s){
+  s=String(s||'').trim();
+  s=s.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+  if(!s.startsWith('{')&&!s.startsWith('[')){
+    const a=s.indexOf('{'),b=s.indexOf('[');let start=-1;
+    if(a>=0&&b>=0)start=Math.min(a,b);else start=Math.max(a,b);
+    const end=Math.max(s.lastIndexOf('}'),s.lastIndexOf(']'));
+    if(start>=0&&end>start)s=s.slice(start,end+1);
   }
+  return s;
 }
-
-async function patch(id, obj) {
-  const r = await fetch(API + "?id=eq." + id, {
-    method:"PATCH",
-    headers:{...HEADERS, Prefer:"return=minimal"},
-    body:JSON.stringify(obj)
-  });
-  if (!r.ok) alert("Gat ekki vistað breytingu.");
-  await load();
+function normLinks(v){
+  if(!v)return[];if(!Array.isArray(v))v=[v];
+  return v.map(x=>typeof x==='string'?{label:'Slóð',url:x}:{label:String(x?.label||x?.name||'Slóð'),url:String(x?.url||x?.href||'')}).filter(x=>x.url);
 }
-
-async function toggleDone(id, done) {
-  await patch(id, {done});
+function importDate(v){
+  if(!v)return null;v=String(v).trim().toLowerCase();
+  if(v==='today'||v==='í dag')return today();
+  if(v==='tomorrow'||v==='á morgun'){const d=new Date();d.setDate(d.getDate()+1);return d.toLocaleDateString('en-CA')}
+  return /^\d{4}-\d{2}-\d{2}$/.test(v)?v:null;
 }
-
-async function deleteItem(id) {
-  if (!confirm("Eyða þessari færslu?")) return;
-  const r = await fetch(API + "?id=eq." + id, {
-    method:"DELETE",
-    headers:HEADERS
-  });
-  if (!r.ok) alert("Gat ekki eytt.");
-  await load();
+function normalizeImport(raw){
+  if(Array.isArray(raw))raw={items:raw};
+  if(!raw||typeof raw!=='object')throw new Error('JSON þarf að vera object eða listi.');
+  const out={items:[],shopping_lists:[],shopping_items:[],memos:[]};
+  for(const x of [...(raw.items||[]),...(raw.plans||[])])if(x?.title)out.items.push({title:String(x.title),category:['plan','staður','flug','matur','annað'].includes(x.category)?x.category:'annað',planned_date:importDate(x.planned_date||x.date),notes:x.notes??x.note??null,starred:!!x.starred,links:normLinks(x.links)});
+  for(const l of [...(raw.shopping_lists||[]),...(raw.shoppingLists||[])])if(l?.title){const nl={title:String(l.title),notes:l.notes??null,starred:!!l.starred,links:normLinks(l.links),items:[]};for(const x of (l.items||[]))if(x?.title)nl.items.push({title:String(x.title),quantity:x.quantity??x.qty??null,notes:x.notes??null,recurring_days:Number(x.recurring_days||x.repeat_days||0)||null,starred:!!x.starred,links:normLinks(x.links)});out.shopping_lists.push(nl)}
+  for(const x of [...(raw.shopping_items||[]),...(raw.shoppingItems||[])])if(x?.title)out.shopping_items.push({list:String(x.list||x.list_title||'Skreppa í búð'),title:String(x.title),quantity:x.quantity??x.qty??null,notes:x.notes??null,recurring_days:Number(x.recurring_days||x.repeat_days||0)||null,starred:!!x.starred,links:normLinks(x.links)});
+  for(const x of (raw.memos||[]))if(x?.title)out.memos.push({title:String(x.title),body:x.body??x.text??x.notes??null,pinned:!!x.pinned,starred:!!x.starred,links:normLinks(x.links)});
+  if(Array.isArray(raw.entries))for(const x of raw.entries){if(!x?.title)continue;if(x.type==='memo')out.memos.push({title:String(x.title),body:x.body??x.text??x.notes??null,pinned:!!x.pinned,starred:!!x.starred,links:normLinks(x.links)});else if(x.type==='shopping_item')out.shopping_items.push({list:String(x.list||'Skreppa í búð'),title:String(x.title),quantity:x.quantity??null,notes:x.notes??null,recurring_days:Number(x.recurring_days||0)||null,starred:!!x.starred,links:normLinks(x.links)});else out.items.push({title:String(x.title),category:['plan','staður','flug','matur','annað'].includes(x.category)?x.category:'annað',planned_date:importDate(x.planned_date||x.date),notes:x.notes??null,starred:!!x.starred,links:normLinks(x.links)})}
+  return out;
 }
-
-function editItem(id) {
-  const x = items.find(i => i.id === id);
-  if (!x) return;
-  $("id").value = x.id;
-  $("title").value = x.title || "";
-  $("category").value = x.category || "annað";
-  $("date").value = x.planned_date || "";
-  $("maps").value = x.maps_url || "";
-  $("notes").value = x.notes || "";
-  $("dlg").showModal();
+function previewJsonImport(){
+  const box=$('jsonResult');try{const raw=JSON.parse(stripJsonWrapper($('jsonText').value));const n=normalizeImport(raw);pendingImport=n;const embedded=n.shopping_lists.reduce((s,l)=>s+l.items.length,0),total=n.items.length+n.shopping_lists.length+n.shopping_items.length+embedded+n.memos.length;if(!total)throw new Error('Engar þekktar færslur fundust.');const names=[...n.items.map(x=>x.title),...n.shopping_lists.map(x=>x.title),...n.shopping_items.map(x=>x.title),...n.memos.map(x=>x.title)].slice(0,8);box.className='import-preview ok';box.innerHTML=`<b>Tilbúið til innflutnings:</b><br>📍 ${n.items.length} plan/staðir · 🛒 ${n.shopping_lists.length} listar · 🧺 ${embedded+n.shopping_items.length} innkaupaatriði · 📝 ${n.memos.length} memó${names.length?'<br><span class="muted">'+names.map(esc).join(' · ')+'</span>':''}`;$('jsonImport').disabled=false}catch(e){pendingImport=null;$('jsonImport').disabled=true;box.className='import-preview err';box.textContent='JSON villa: '+e.message}}
+async function appendImportedLinks(entityType,entityId,arr){
+  if(!arr?.length)return;const existing=elinks(entityType,entityId);const fresh=arr.filter(x=>!existing.some(y=>y.url===x.url&&y.label===x.label));if(!fresh.length)return;const base=existing.length*10;const r=await sb.from('links').insert(fresh.map((x,i)=>({trip_id:tripId,entity_type:entityType,entity_id:String(entityId),label:x.label,url:x.url,sort_order:base+(i+1)*10})));if(r.error)throw r.error;
 }
-
-$("add").onclick = () => {
-  $("form").reset();
-  $("id").value = "";
-  $("date").value = isoToday();
-  $("dlg").showModal();
-  setTimeout(() => $("title").focus(), 50);
+async function getOrCreateImportList(l){
+  let found=lists.find(x=>x.title.trim().toLowerCase()===l.title.trim().toLowerCase());
+  if(found){if(l.links?.length)await appendImportedLinks('shopping_list',found.id,l.links);return found.id}
+  const r=await sb.from('shopping_lists').insert({trip_id:tripId,title:l.title,notes:l.notes||null,starred:!!l.starred}).select().single();if(r.error)throw r.error;await appendImportedLinks('shopping_list',r.data.id,l.links);lists.push(r.data);return r.data.id;
+}
+$('jsonImport').onclick=async()=>{
+  if(!pendingImport)return previewJsonImport();const btn=$('jsonImport'),box=$('jsonResult');btn.disabled=true;box.className='import-preview ok';box.textContent='Flyt inn…';let c={items:0,lists:0,shop:0,memos:0};
+  try{
+    for(const x of pendingImport.items){const r=await sb.from('items').insert({trip_id:tripId,title:x.title,category:x.category,planned_date:x.planned_date,notes:x.notes||null,starred:x.starred,created_by:'JSON import'}).select().single();if(r.error)throw r.error;await appendImportedLinks('item',r.data.id,x.links);c.items++}
+    for(const l of pendingImport.shopping_lists){const existed=lists.some(x=>x.title.trim().toLowerCase()===l.title.trim().toLowerCase());const lid=await getOrCreateImportList(l);if(!existed)c.lists++;for(const x of l.items){const r=await sb.from('shopping_items').insert({trip_id:tripId,list_id:lid,title:x.title,quantity:x.quantity||null,notes:x.notes||null,recurring_days:x.recurring_days,starred:x.starred}).select().single();if(r.error)throw r.error;await appendImportedLinks('shopping_item',r.data.id,x.links);c.shop++}}
+    for(const x of pendingImport.shopping_items){const lid=await getOrCreateImportList({title:x.list,links:[]});const r=await sb.from('shopping_items').insert({trip_id:tripId,list_id:lid,title:x.title,quantity:x.quantity||null,notes:x.notes||null,recurring_days:x.recurring_days,starred:x.starred}).select().single();if(r.error)throw r.error;await appendImportedLinks('shopping_item',r.data.id,x.links);c.shop++}
+    for(const x of pendingImport.memos){const r=await sb.from('memos').insert({trip_id:tripId,title:x.title,body:x.body||null,pinned:x.pinned,starred:x.starred}).select().single();if(r.error)throw r.error;await appendImportedLinks('memo',r.data.id,x.links);c.memos++}
+    await load();pendingImport=null;box.innerHTML=`✅ Innflutt: ${c.items} plan/staðir, ${c.lists} nýir listar, ${c.shop} innkaupaatriði og ${c.memos} memó.`;setTimeout(()=>$('importDlg').close(),900);
+  }catch(e){console.error(e);box.className='import-preview err';box.textContent='Innflutningur stöðvaðist: '+(e.message||e);btn.disabled=false}
 };
+// ---------------------------------------------------------------------------
 
-$("cancel").onclick = () => $("dlg").close();
-
-$("form").onsubmit = async e => {
-  e.preventDefault();
-  const obj = {
-    title:$("title").value.trim(),
-    category:$("category").value,
-    planned_date:$("date").value || null,
-    maps_url:$("maps").value.trim() || null,
-    notes:$("notes").value.trim() || null,
-    created_by:"Daði/Kata"
-  };
-  const id = $("id").value;
-
-  let r;
-  if (id) {
-    r = await fetch(API + "?id=eq." + id, {
-      method:"PATCH",
-      headers:{...HEADERS, Prefer:"return=minimal"},
-      body:JSON.stringify(obj)
-    });
-  } else {
-    r = await fetch(API, {
-      method:"POST",
-      headers:{...HEADERS, Prefer:"return=minimal"},
-      body:JSON.stringify(obj)
-    });
-  }
-  if (!r.ok) {
-    alert("Gat ekki vistað. Athugaðu netsambandið.");
-    return;
-  }
-  $("dlg").close();
-  await load();
-};
-
-window.addEventListener("online", load);
-window.addEventListener("focus", load);
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js");
-}
-
-load();
-setInterval(load, 12000);
+window.addEventListener('focus',()=>tripId&&load());setInterval(()=>tripId&&load(),15000);
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');init();
 </script>
-</body>
-</html>
+</body></html>

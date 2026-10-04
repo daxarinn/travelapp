@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tyrkland</title><script>
+const p=new URLSearchParams(location.search);
+localStorage.setItem('travelapp_pending_share',JSON.stringify({
+ title:p.get('title')||'', text:p.get('text')||'', url:p.get('url')||''
+}));
+location.replace('./?shared=1');
+</script><body style="background:#0d0f10;color:#fff;font-family:system-ui;padding:30px">Opna Tyrkland…</body>
