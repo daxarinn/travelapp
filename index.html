@@ -8,7 +8,30 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Independent guard also catches syntax errors in the application script.
+window.travelappStartup = (() => {
+ let timer,settled=false;
+ function fail(error, stage='Ræsing') {
+  settled=true;clearTimeout(timer);
+  console.error('[TravelApp] '+stage, error);
+  const show=()=>{
+   document.getElementById('sync').textContent='Villa';
+   const box=document.getElementById('startupError');
+   box.classList.remove('hidden');
+   document.getElementById('startupMessage').textContent=stage+': '+(error?.message||String(error));
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show();
+ }
+ document.addEventListener('DOMContentLoaded',()=>{
+  if(settled)return;
+  timer=setTimeout(()=>fail(new Error('Ræsing tók of langan tíma. Athugaðu nettengingu og reyndu aftur.')),45000);
+ },{once:true});
+ window.addEventListener('error',e=>fail(e.error||new Error(e.message)));
+ window.addEventListener('unhandledrejection',e=>fail(e.reason));
+ return {fail,finish(){settled=true;clearTimeout(timer);document.getElementById('startupError').classList.add('hidden')}};
+})();
+</script>
 <style>
 :root{--bg:#0d0f10;--card:#171a1c;--card2:#202427;--text:#f7f4ed;--muted:#aaa79f;--accent:#e5b85c;--ok:#8fcf9d;--line:#2c3033;--danger:#e99b9b}
 *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
@@ -33,6 +56,11 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px} input,t
 <body>
 <main>
 <header><div><h1>🇹🇷 Tyrkland</h1><div class="sub">Daði & Kata · sameiginlega ferðaborðið · v2.1</div></div><div class="sync" id="sync">Ræsir…</div></header>
+<div id="startupError" class="join-box hidden" role="alert">
+ <h2>Ekki tókst að opna ferðina</h2><p id="startupMessage"></p>
+ <p class="muted">Athugaðu nettengingu og reyndu aftur. Tæknilegar upplýsingar eru í console.</p>
+ <div class="modal-actions"><button type="button" onclick="location.reload()">Reyna aftur</button></div>
+</div>
 <div id="joined" class="hidden">
  <div class="search"><input id="search" type="search" placeholder="🔎 Leita í öllu…"></div>
  <nav class="tabs" id="tabs"></nav><section id="content"></section>
@@ -81,8 +109,8 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px} input,t
 </dialog>
 
 <script>
-const URL='https://ecvpkolcusayuakntnlb.supabase.co', KEY='sb_publishable_EFXmhorucrLfmiWHj0NZMg_YhPIOPYM';
-const sb=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const SUPABASE_URL='https://ecvpkolcusayuakntnlb.supabase.co', KEY='sb_publishable_EFXmhorucrLfmiWHj0NZMg_YhPIOPYM';
+let sb;
 let tripId=null,items=[],links=[],lists=[],shop=[],memos=[],tab='today',openList=null,q='';
 const $=x=>document.getElementById(x);
 const tabs=[['today','Í dag'],['starred','⭐'],['plans','Plan'],['shopping','Innkaup'],['memos','Memó']];
@@ -94,25 +122,55 @@ function lhtml(t,id){const a=elinks(t,id);return a.length?`<div class="links">${
 function due(x){return !x.purchased||(x.recurring_days&&x.next_due_date&&x.next_due_date<=today())}
 function star(kind,id,val){return `<button class="star" onclick="toggleStar('${kind}','${id}',${!val})">${val?'⭐':'☆'}</button>`}
 
+async function bounded(task,stage,ms=12000){
+ let timer;
+ try{return await Promise.race([task,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Tímamörk náð. Athugaðu nettengingu og reyndu aftur.')),ms)})])}
+ catch(error){console.error('[TravelApp] '+stage,error);throw new Error(stage+': '+(error.message||String(error)),{cause:error})}
+ finally{clearTimeout(timer)}
+}
+async function checked(task,stage){const r=await bounded(task,stage);if(r.error){console.error('[TravelApp] '+stage,r.error);throw new Error(stage+': '+r.error.message,{cause:r.error})}return r}
+async function loadSupabase(){
+ if(window.supabase?.createClient)return;
+ await bounded(new Promise((resolve,reject)=>{
+  const script=document.createElement('script');script.src='./vendor/supabase-2.117.2.js';
+  script.onload=()=>window.supabase?.createClient?resolve():reject(new Error('Supabase library vantar.'));
+  script.onerror=()=>reject(new Error('Ekki tókst að sækja Supabase library. Athugaðu nettengingu.'));
+  document.head.appendChild(script);
+ }),'Supabase library');
+}
 async function init(){
- let {data:{session}}=await sb.auth.getSession();
- if(!session){const r=await sb.auth.signInAnonymously();if(r.error){$('sync').textContent='Auth villa';$('joined').classList.remove('hidden');$('content').innerHTML='<div class="empty">Kveiktu á Anonymous Sign-Ins í Supabase.</div>';return}session=r.data.session}
- const m=await sb.from('trip_members').select('trip_id').eq('user_id',session.user.id).maybeSingle();
+ await loadSupabase();
+ sb=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+ let {data:{session}}=await checked(sb.auth.getSession(),'Lesa innskráningu');
+ if(!session){
+  const r=await checked(sb.auth.signInAnonymously(),'Anonymous innskráning');session=r.data.session;
+ }
+ if(!session?.user)throw new Error('Innskráning skilaði engri session.');
+ const m=await checked(sb.from('trip_members').select('trip_id').eq('user_id',session.user.id).maybeSingle(),'Lesa ferðaaðild');
  if(!m.data){$('join').classList.remove('hidden');$('sync').textContent='Ótengdur';return}
- tripId=m.data.trip_id;showApp();await load();handleShare();
+ tripId=m.data.trip_id;await load();showApp();handleShare();
 }
 function showApp(){$('join').classList.add('hidden');$('joined').classList.remove('hidden');$('add').classList.remove('hidden')}
-$('joinBtn').onclick=async()=>{$('joinMsg').textContent='Tengist…';const r=await sb.rpc('join_trip',{p_code:$('joinCode').value.trim()});if(r.error){$('joinMsg').textContent='Rangur kóði eða villa.';return}tripId=r.data;showApp();await load();handleShare()};
+$('joinBtn').onclick=async()=>{
+ const btn=$('joinBtn');btn.disabled=true;$('joinMsg').textContent='Tengist…';
+ try{
+  const r=await checked(sb.rpc('join_trip',{p_code:$('joinCode').value.trim()}),'Tengjast ferð');
+  if(!r.data)throw new Error('Tenging skilaði engu trip_id.');
+  tripId=r.data;await load();showApp();handleShare();$('joinMsg').textContent='';window.travelappStartup.finish();
+ }catch(error){console.error('[TravelApp] Join',error);$('joinMsg').textContent=error.message}
+ finally{btn.disabled=false}
+};
 
 async function load(){
- const rs=await Promise.all([
+ const rs=await bounded(Promise.all([
   sb.from('items').select('*').eq('trip_id',tripId).order('sort_order').order('id'),
   sb.from('links').select('*').eq('trip_id',tripId).order('sort_order'),
   sb.from('shopping_lists').select('*').eq('trip_id',tripId).order('sort_order'),
   sb.from('shopping_items').select('*').eq('trip_id',tripId).order('sort_order'),
   sb.from('memos').select('*').eq('trip_id',tripId).order('pinned',{ascending:false}).order('updated_at',{ascending:false})
- ]);
- if(rs.some(r=>r.error)){$('sync').textContent='Offline';return}
+ ]),'Sækja ferðagögn');
+ const tables=['items','links','shopping_lists','shopping_items','memos'];
+ rs.forEach((r,i)=>{if(r.error){console.error('[TravelApp] '+tables[i],r.error);throw new Error('Ekki tókst að lesa '+tables[i]+': '+r.error.message,{cause:r.error})}});
  [items,links,lists,shop,memos]=rs.map(r=>r.data||[]);$('sync').textContent='● Samstillt';render();
 }
 function renderTabs(){$('tabs').innerHTML=tabs.map(([k,n])=>`<button class="tab ${tab===k?'active':''}" data-k="${k}">${n}</button>`).join('');document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.k;openList=null;render()})}
@@ -215,7 +273,9 @@ $('jsonImport').onclick=async()=>{
 };
 // ---------------------------------------------------------------------------
 
-window.addEventListener('focus',()=>tripId&&load());setInterval(()=>tripId&&load(),15000);
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');init();
+function refresh(){if(tripId&&!$('joined').classList.contains('hidden'))load().then(()=>window.travelappStartup.finish()).catch(error=>window.travelappStartup.fail(error,'Samstilling'))}
+window.addEventListener('focus',refresh);setInterval(refresh,15000);
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(error=>console.error('[TravelApp] Service worker',error));
+init().then(()=>window.travelappStartup.finish()).catch(error=>window.travelappStartup.fail(error));
 </script>
 </body></html>
