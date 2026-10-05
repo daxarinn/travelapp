@@ -1,4 +1,4 @@
-const C='travelapp-v2-2';
+const C='travelapp-v2-4';
 const A=['./','./index.html','./share.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./vendor/supabase-2.117.2.js'];
 const shellURLs=new Set(A.map(path=>new URL(path,self.registration.scope).href));
 self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(A)).then(()=>self.skipWaiting())));
