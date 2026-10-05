@@ -1,6 +1,7 @@
-TYRKLAND — DAÐI & KATA PWA v2.5
+TYRKLAND — DAÐI & KATA PWA v2.6
 
 BREYTINGAR
+- Innkaup opna nýjast breytta listann beint með öllum vörum sýnilegum. Breytingar á vörum telja líka; velja má annan lista í fellilista.
 - Aðalfliparnir eru Dagsplan, Hugmyndir og Heildarplan. Heildarplan er í tímaröð eftir degi og klukku, með dagsetningar fyrirsögnum.
 - Ferðin, Innkaup, Stjörnumerkt og Memó eru í sérvalmynd.
 - „Ferðin“ hefur yfirlit fyrir flug, samgöngur og gistingu fyrir alla ferðina, líka langt fram í tímann.
@@ -20,7 +21,7 @@ BREYTINGAR
 UPPFÆRSLA Á NÚVERANDI UPPSETNINGU
 1. Keyrðu migrations/001_planned_time.sql og síðan migrations/002_travel_details.sql í Supabase SQL Editor. Skrárnar má keyra oftar en einu sinni.
 2. Birttu index.html og sw.js ásamt núverandi manifest.webmanifest, share.html, táknum og vendor/ á sömu HTTPS slóð og áður.
-3. Opnaðu appið með nettengingu. Nýtt service-worker skyndiminni heitir travelapp-v2-5.
+3. Opnaðu appið með nettengingu. Nýtt service-worker skyndiminni heitir travelapp-v2-6.
 
 SQL skrefið þarf að framkvæma í Supabase; það er ekki keyrt af appinu. Eldri viðburðir virka án þess, en vistun klukku og bókunarupplýsinga sýnir skýr skilaboð ef nýju dálkana vantar. Innskráning, aðild og RLS-reglur núverandi Supabase verkefnis eru áfram notaðar. Þessi kóðageymsla inniheldur ekki grunnuppsetningu gagnagrunnsins eða raunverulegan boðskóða ferðarinnar. IZMIR-… í innskráningarglugganum er aðeins dæmi.
 

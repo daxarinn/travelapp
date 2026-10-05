@@ -148,7 +148,7 @@ def run():
             expect(page.locator('.expand').first).to_have_attribute('aria-expanded','true')
             assert page.locator('.event-row').first.bounding_box()['height'] <= 42
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
-            screenshot=Path(tempfile.gettempdir())/'travelapp-v2-5-mobile.png'
+            screenshot=Path(tempfile.gettempdir())/'travelapp-v2-6-mobile.png'
             page.screenshot(path=str(screenshot),full_page=True)
 
             page.get_by_role('button', name='Sjá næsta dag', exact=True).click()
@@ -209,7 +209,21 @@ def run():
             page.locator('[data-k="shopping"]').click()
             expect(page.locator('#moreLabel')).to_contain_text('☰ Innkaup')
             expect(page.locator('[data-k="journey"]')).to_be_hidden()
-            page.locator('#content .card').click()
+            expect(page.locator('#content')).to_contain_text('Milk')
+            expect(page.locator('#content')).to_contain_text('Bread')
+            expect(page.locator('#content')).to_contain_text('Coffee')
+            page.evaluate("testDB.shopping_lists.push({id:'other',trip_id:'trip',title:'Other list',updated_at:'2026-10-04T10:00:00Z'});testDB.shopping_items.find(x=>x.id==='milk').updated_at='2026-10-05T10:00:00Z';openList=null;refresh()")
+            expect(page.locator('#shoppingListPicker')).to_have_value('list')
+            page.locator('#shoppingListPicker').select_option('other')
+            expect(page.locator('.empty')).to_have_text('Tómur listi.')
+            page.evaluate("testDB.shopping_lists.find(x=>x.id==='other').updated_at='2026-10-06T10:00:00Z';refresh()")
+            page.locator('[data-k="today"]').click()
+            page.locator('#moreLabel').click()
+            page.locator('[data-k="shopping"]').click()
+            expect(page.locator('#shoppingListPicker')).to_have_value('other')
+            page.locator('#shoppingListPicker').select_option('list')
+            page.evaluate('refresh()')
+            expect(page.locator('#shoppingListPicker')).to_have_value('list')
             page.locator('.card').filter(has=page.get_by_text('Milk',exact=True)).locator('.check').click()
             expect(page.locator('[data-k="shopping"] .count')).to_have_text('1')
             expect(page.locator('#moreLabel .count')).to_have_text('1')
@@ -266,7 +280,7 @@ def run():
             shell_page.goto(origin)
             shell_page.evaluate('navigator.serviceWorker.ready')
             shell_page.wait_for_function('navigator.serviceWorker.controller !== null')
-            assert shell_page.evaluate('caches.keys()')==['travelapp-v2-5']
+            assert shell_page.evaluate('caches.keys()')==['travelapp-v2-6']
             shell_context.set_offline(True)
             shell_page.reload()
             expect(shell_page.locator('#sync')).to_have_text('● Samstillt')

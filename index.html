@@ -60,7 +60,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px} input,t
 </head>
 <body>
 <main>
-<header><div><h1>🇹🇷 Tyrkland</h1><div class="sub">Daði & Kata · sameiginlega ferðaborðið · v2.5</div></div><div class="sync" id="sync">Ræsir…</div></header>
+<header><div><h1>🇹🇷 Tyrkland</h1><div class="sub">Daði & Kata · sameiginlega ferðaborðið · v2.6</div></div><div class="sync" id="sync">Ræsir…</div></header>
 <div id="startupError" class="join-box hidden" role="alert">
  <h2>Ekki tókst að opna ferðina</h2><p id="startupMessage"></p>
  <p class="muted">Athugaðu nettengingu og reyndu aftur. Tæknilegar upplýsingar eru í console.</p>
@@ -231,7 +231,17 @@ function renderToday(){const date=selectedDate(),p=items.filter(x=>onDay(x,date)
 function renderStarred(){const h=items.filter(x=>x.starred).map(itemCard).join('')+shop.filter(x=>x.starred).map(shopCard).join('')+memos.filter(x=>x.starred).map(memoCard).join('');$('content').innerHTML=h||'<div class="empty">Engar stjörnur enn ⭐</div>'}
 function renderPlans(){let lastDate='';$('content').innerHTML=items.filter(x=>x.planned_date).sort(sortPlans).map(x=>{const heading=x.planned_date!==lastDate?`<h2 class="section-title">${dayLabel(x.planned_date)}</h2>`:'';lastDate=x.planned_date;return heading+itemCard(x)}).join('')||'<div class="empty">Ekkert plan enn. Hugmyndir bíða í Hugmyndum.</div>'}
 function renderIdeas(){$('content').innerHTML='<p class="hint">Safnaðu hugmyndum hér. Smelltu á heiti og veldu „Setja á plan“ þegar dagsetning liggur fyrir.</p>'+(items.filter(x=>!x.planned_date).map(itemCard).join('')||'<div class="empty">Engar hugmyndir enn. Bættu við með +.</div>')}
-function renderShopping(){if(openList){const l=lists.find(x=>x.id===openList);if(!l){openList=null;return renderShopping()}const its=shop.filter(x=>x.list_id===l.id).sort((a,b)=>Number(!due(a))-Number(!due(b)));$('content').innerHTML=`<button class="back" onclick="openList=null;render()">← Allir listar</button><article class="card"><div class="top"><div class="grow"><div class="title">🛒 ${esc(l.title)}</div>${l.notes?`<div class="notes">${esc(l.notes)}</div>`:''}</div>${star('shopping_list',l.id,l.starred)}</div>${lhtml('shopping_list',l.id)}<div class="actions"><button onclick="newShopItem('${l.id}')">+ Vara</button><button onclick="editEntity('shoplist','${l.id}')">Breyta lista</button></div></article><div class="section-title">Atriði</div>${its.map(shopCard).join('')||'<div class="empty">Tómur listi.</div>'}`;return}$('content').innerHTML=lists.map(l=>`<article class="card" onclick="openList='${l.id}';render()" style="cursor:pointer"><div class="title">🛒 ${esc(l.title)}</div><div class="meta">${shop.filter(x=>x.list_id===l.id&&due(x)).length} ókeypt / komið á tíma</div>${l.notes?`<div class="notes">${esc(l.notes)}</div>`:''}</article>`).join('')||'<div class="empty">Engir innkaupalistar.</div>'}
+function shoppingChangedAt(list){const times=[list.updated_at,list.created_at,...shop.filter(x=>x.list_id===list.id).flatMap(x=>[x.updated_at,x.created_at,x.last_purchased_at])];return Math.max(0,...times.map(value=>Date.parse(value)||0))}
+function renderShopping(){
+ const ordered=[...lists].sort((a,b)=>shoppingChangedAt(b)-shoppingChangedAt(a));
+ const l=ordered.find(x=>x.id===openList)||ordered[0];
+ if(!l){openList=null;$('content').innerHTML='<div class="empty">Engir innkaupalistar.</div>';return}
+ openList=l.id;
+ const its=shop.filter(x=>x.list_id===l.id).sort((a,b)=>Number(!due(a))-Number(!due(b)));
+ const picker=ordered.length>1?`<label for="shoppingListPicker">Innkaupalisti</label><select id="shoppingListPicker">${ordered.map(x=>`<option value="${esc(x.id)}" ${x.id===l.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select>`:'';
+ $('content').innerHTML=`${picker}<article class="card"><div class="top"><div class="grow"><div class="title">🛒 ${esc(l.title)}</div>${l.notes?`<div class="notes">${esc(l.notes)}</div>`:''}</div>${star('shopping_list',l.id,l.starred)}</div>${lhtml('shopping_list',l.id)}<div class="actions"><button onclick="newShopItem('${l.id}')">+ Vara</button><button onclick="editEntity('shoplist','${l.id}')">Breyta lista</button></div></article><div class="section-title">Atriði</div>${its.map(shopCard).join('')||'<div class="empty">Tómur listi.</div>'}`;
+ if($('shoppingListPicker'))$('shoppingListPicker').onchange=e=>{openList=e.target.value;render()};
+}
 function renderMemos(){$('content').innerHTML=memos.map(memoCard).join('')||'<div class="empty">Engin memó enn.</div>'}
 function renderSearch(){const z=q.toLowerCase(),out=[];for(const x of items)if((JSON.stringify(x)+JSON.stringify(elinks('item',x.id))).toLowerCase().includes(z))out.push(itemCard(x));for(const x of shop)if((JSON.stringify(x)+JSON.stringify(elinks('shopping_item',x.id))).toLowerCase().includes(z))out.push(shopCard(x));for(const x of memos)if((JSON.stringify(x)+JSON.stringify(elinks('memo',x.id))).toLowerCase().includes(z))out.push(memoCard(x));$('content').innerHTML=out.join('')||'<div class="empty">Ekkert fannst.</div>'}
 $('search').oninput=e=>{q=e.target.value.trim();render()};
