@@ -1,6 +1,8 @@
-TYRKLAND — DAÐI & KATA PWA v2.4
+TYRKLAND — DAÐI & KATA PWA v2.5
 
 BREYTINGAR
+- Aðalfliparnir eru Dagsplan, Hugmyndir og Heildarplan. Heildarplan er í tímaröð eftir degi og klukku, með dagsetningar fyrirsögnum.
+- Ferðin, Innkaup, Stjörnumerkt og Memó eru í sérvalmynd.
 - „Ferðin“ hefur yfirlit fyrir flug, samgöngur og gistingu fyrir alla ferðina, líka langt fram í tímann.
 - Bókanir geyma brottför/innritun og komu/útritun, staði, heimilisfang, þjónustuaðila, flugnúmer/leið og bókunarnúmer. Athugasemdir og slóðir eru áfram í boði.
 - Flug og samgöngur birtast á brottfarar- og komudegi í dagsplani. Gisting birtist alla daga frá innritun til útritunar, með útritunartíma síðasta daginn.
@@ -9,7 +11,7 @@ BREYTINGAR
 - Smelltu á heiti hugmyndar og veldu „Setja á plan“ til að velja dag og klukku.
 - Staðan í breytingaglugganum leyfir líka að færa plan aftur í hugmyndir.
 - Dagsplan á forsíðu hefur fyrri/næsta dag og „Aftur í dag“, án takmarks á dagafjölda.
-- Innkaup eru í eigin flipa. Rauð tala sýnir ókeypt og endurtekin atriði sem eru komin á tíma miðað við daginn í dag, óháð hvaða dagsplan er skoðað.
+- Innkaup eru í sérvalmynd. Rauð tala sýnir ókeypt og endurtekin atriði sem eru komin á tíma miðað við daginn í dag, óháð hvaða dagsplan er skoðað.
 - Þéttar viðburðalínur hafa ör fyrir nánari upplýsingar. Heitið opnar allan viðburðinn; Breyta og Eyða eru þar inni.
 - Klukka er valkvæð. Venjulegir viðburðir miðast við staðartíma í Tyrklandi (Europe/Istanbul). Tímasett atriði raðast eftir klukku; ótímasett fara aftast.
 - Deilt efni úr öðrum öppum opnast sem ný hugmynd áður en það er vistað.
@@ -18,7 +20,7 @@ BREYTINGAR
 UPPFÆRSLA Á NÚVERANDI UPPSETNINGU
 1. Keyrðu migrations/001_planned_time.sql og síðan migrations/002_travel_details.sql í Supabase SQL Editor. Skrárnar má keyra oftar en einu sinni.
 2. Birttu index.html og sw.js ásamt núverandi manifest.webmanifest, share.html, táknum og vendor/ á sömu HTTPS slóð og áður.
-3. Opnaðu appið með nettengingu. Nýtt service-worker skyndiminni heitir travelapp-v2-4.
+3. Opnaðu appið með nettengingu. Nýtt service-worker skyndiminni heitir travelapp-v2-5.
 
 SQL skrefið þarf að framkvæma í Supabase; það er ekki keyrt af appinu. Eldri viðburðir virka án þess, en vistun klukku og bókunarupplýsinga sýnir skýr skilaboð ef nýju dálkana vantar. Innskráning, aðild og RLS-reglur núverandi Supabase verkefnis eru áfram notaðar. Þessi kóðageymsla inniheldur ekki grunnuppsetningu gagnagrunnsins eða raunverulegan boðskóða ferðarinnar. IZMIR-… í innskráningarglugganum er aðeins dæmi.
 
